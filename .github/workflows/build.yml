@@ -29,7 +29,7 @@ jobs:
           install: git make mingw-w64-${{matrix.env}}-toolchain mingw-w64-${{matrix.env}}-qt5 mingw-w64-${{matrix.env}}-qtwebkit upx p7zip
       - name: Configure
         run: |
-          qmake DISABLE_ANALYTICS=yes DISABLE_SHARENEWS=yes
+          qmake DISABLE_ANALYTICS=yes DISABLE_SHARENEWS=yes DISABLE_UPDATECHECK=yes
           sed 's/windres -i/windres --codepage=65001 -i/g' -i Makefile.Release
       - name: Build
         run: make release
@@ -53,7 +53,7 @@ jobs:
           touch release/target/portable.dat
       - name: Deploy upx
         run: |
-           upx --best  --brute  --ultra-brute -v release/target/QuiteRSS.exe
+           upx --best --brute --ultra-brute -v release/target/QuiteRSS.exe
       - name: Deploy 7z archive
         run: |
           7z a -mx=9 QuiteRss-gcc-${{matrix.env}}.7z ./release/target/*
