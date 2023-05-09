@@ -29,7 +29,7 @@ jobs:
           install: git make mingw-w64-${{matrix.env}}-toolchain mingw-w64-${{matrix.env}}-qt5 mingw-w64-${{matrix.env}}-qtwebkit upx p7zip
       - name: Configure
         run: |
-          qmake DISABLE_ANALYTICS=yes DISABLE_SHARENEWS=yes DISABLE_UPDATECHECK=yes DISABLE_PRINT=yes
+          qmake DISABLE_ANALYTICS=yes DISABLE_SHARENEWS=yes DISABLE_UPDATECHECK=yes DISABLE_PRINT=yes DISABLE_CLICK2FLASH=yes
           sed 's/windres -i/windres --codepage=65001 -i/g' -i Makefile.Release
       - name: Build
         run: make release

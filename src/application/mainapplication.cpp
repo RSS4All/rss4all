@@ -245,7 +245,9 @@ void MainApplication::connectDatabase()
 
 void MainApplication::loadSettings()
 {
+#ifdef USE_CLICK2FLASH
   c2fLoadSettings();
+#endif
   reloadUserStyleBrowser();
 }
 
@@ -540,6 +542,7 @@ void MainApplication::sqlQueryExec(const QString &query)
   emit signalSqlQueryExec(query);
 }
 
+#ifdef USE_CLICK2FLASH
 /** @brief Click to Flash
  *---------------------------------------------------------------------------*/
 void MainApplication::c2fLoadSettings()
@@ -587,6 +590,7 @@ void MainApplication::c2fAddWhitelist(const QString &site)
 {
   c2fWhitelist_.append(site);
 }
+#endif
 
 DownloadManager *MainApplication::downloadManager()
 {
