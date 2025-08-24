@@ -1823,7 +1823,10 @@ void NewsTabWidget::loadNewspaper(int refresh)
           shareMenu % 
 #endif
           openBrowserAction %
-          openHomeAction % deleteAction;
+#ifdef USE_HOME
+          openHomeAction %
+#endif
+          deleteAction;
 
       QString border = "1";
       if (idx + 1 == newsModel_->rowCount())
