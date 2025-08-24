@@ -1,0 +1,64 @@
+name: Build with gcc in windows
+
+on:
+  push:
+  schedule:
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    strategy:
+      matrix:
+        include:
+          - { sys: mingw64, env: x86_64 }
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install toolchain and Qt libraries
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{matrix.sys}}
+          update: true
+          install: git make mingw-w64-${{matrix.env}}-toolchain mingw-w64-${{matrix.env}}-qt5 mingw-w64-${{matrix.env}}-qtwebkit upx p7zip
+      - name: Configure
+        run: |
+          qmake
+          sed 's/windres -i/windres --codepage=65001 -i/g' -i Makefile.Release
+      - name: Build
+        run: make release
+      - name: Deploy Qt
+        run: |
+          windeployqt --no-opengl-sw --no-angle --no-system-d3d-compiler --no-translations --force ./release/target/QuiteRSS.exe
+      - name: Deploy mingw
+        run: |
+          cp $MSYSTEM_PREFIX/bin/libcrypto-*.dll ./release/target/
+          cp $MSYSTEM_PREFIX/bin/libssl-*.dll ./release/target/
+          ldd ./release/target/QuiteRSS.exe | grep "=> /" | grep mingw | awk '{print $3}' | xargs -I '{}' cp -v '{}' ./release/target/
+      - name: Deploy strip
+        run: |
+          for filename in ./release/target/*.exe; do strip "$filename"; done
+          for filename in ./release/target/*.dll; do strip "$filename"; done
+          for filename in ./release/target/**/*.dll; do strip "$filename"; done
+      - name: Deploy resource
+        run: |
+          cp -rvf ./sound ./release/target/
+          cp -rvf ./style ./release/target/
+          touch release/target/portable.dat
+      - name: Deploy upx
+        run: |
+           upx --best  --brute  --ultra-brute -v release/target/QuiteRSS.exe
+      - name: Deploy 7z archive
+        run: |
+          7z a -mx=9 QuiteRss-gcc-${{matrix.env}}.7z ./release/target/*
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: QuiteRss-gcc-${{matrix.env}}.7z
+          path: QuiteRss-gcc-${{matrix.env}}.7z
