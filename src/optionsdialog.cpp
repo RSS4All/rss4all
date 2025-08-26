@@ -257,8 +257,8 @@ bool OptionsDialog::eventFilter(QObject *obj, QEvent *event)
           if (!shortcutStr.isEmpty()) {
             for (int i = 0; i < treeItems.count(); i++) {
               if ((treeItems.count() == 2) || (treeItems.at(i)->row() == row)) {
-                treeItems.at(i)->setData(shortcutModel_->item(0, 1)->data(Qt::TextColorRole),
-                                         Qt::TextColorRole);
+                treeItems.at(i)->setData(shortcutModel_->item(0, 1)->data(Qt::ForegroundRole),
+                                         Qt::ForegroundRole);
               }
             }
           }
@@ -276,7 +276,7 @@ bool OptionsDialog::eventFilter(QObject *obj, QEvent *event)
                                           shortcutModel_->item(treeItems.at(i)->row(), 0)->text()
                                           + "'");
               }
-              treeItems.at(i)->setData(QColor(Qt::red), Qt::TextColorRole);
+              treeItems.at(i)->setData(QColor(Qt::red), Qt::ForegroundRole);
             }
           } else {
             warningShortcut_->clear();
@@ -2178,7 +2178,7 @@ void OptionsDialog::loadActionShortcut(QList<QAction *> actions, QStringList *li
     treeItems = shortcutModel_->findItems(str, Qt::MatchFixedString, 2);
     if ((treeItems.count() > 1) && !str.isEmpty()) {
       for (int i = 0; i < treeItems.count(); i++) {
-        treeItems.at(i)->setData(QColor(Qt::red), Qt::TextColorRole);
+        treeItems.at(i)->setData(QColor(Qt::red), Qt::ForegroundRole);
       }
     }
   }
@@ -2231,8 +2231,8 @@ void OptionsDialog::slotClearShortcut()
   if ((treeItems.count() > 1) && !str.isEmpty()) {
     for (int i = 0; i < treeItems.count(); i++) {
       if ((treeItems.count() == 2) || (treeItems.at(i)->row() == row)) {
-        treeItems.at(i)->setData(shortcutModel_->item(0, 1)->data(Qt::TextColorRole),
-                                 Qt::TextColorRole);
+        treeItems.at(i)->setData(shortcutModel_->item(0, 1)->data(Qt::ForegroundRole),
+                                 Qt::ForegroundRole);
       }
     }
   }
@@ -2257,8 +2257,8 @@ void OptionsDialog::slotResetShortcut()
   if (!str.isEmpty()) {
     for (int i = 0; i < treeItems.count(); i++) {
       if ((treeItems.count() == 2) || (treeItems.at(i)->row() == row)) {
-        treeItems.at(i)->setData(shortcutModel_->item(0, 1)->data(Qt::TextColorRole),
-                                 Qt::TextColorRole);
+        treeItems.at(i)->setData(shortcutModel_->item(0, 1)->data(Qt::ForegroundRole),
+                                 Qt::ForegroundRole);
       }
     }
   }
@@ -2279,7 +2279,7 @@ void OptionsDialog::slotResetShortcut()
                                   "'");
       }
       if (treeItems.count() > 1) {
-        treeItems.at(i)->setData(QColor(Qt::red), Qt::TextColorRole);
+        treeItems.at(i)->setData(QColor(Qt::red), Qt::ForegroundRole);
       }
     }
   }

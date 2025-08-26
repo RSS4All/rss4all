@@ -33,12 +33,14 @@ class QzRegExp : public QRegularExpression
 public:
     QzRegExp();
     QzRegExp(const QString &pattern, Qt::CaseSensitivity cs = Qt::CaseSensitive);
-    QzRegExp(const QzRegExp &re);
 
     void setMinimal(bool minimal);
     int indexIn(const QString &str, int offset = 0) const;
     int matchedLength() const;
     QString cap(int nth = 0) const;
+
+    QzRegExp& operator=(const QzRegExp& re);
+
 
 private:
     QStringList m_capturedTexts;

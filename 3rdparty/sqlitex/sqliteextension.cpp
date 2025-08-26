@@ -25,7 +25,7 @@
 #include <QDebug>
 
 #include <sqlite3.h>
-#include <qzregexp.h>
+#include <QRegularExpression>
 
 static int localeCompare( void* /*arg*/, int len1, const void* data1, int len2, const void* data2 )
 {
@@ -50,17 +50,18 @@ static void regexpFunction( sqlite3_context* context, int /*argc*/, sqlite3_valu
   int len2 = sqlite3_value_bytes16( argv[ 1 ] );
   const void* data2 = sqlite3_value_text16( argv[ 1 ] );
 
-  if ( !data1 || !data2 )
-    return;
+  if ( data1 && data2 )
+  {
+    // do not use fromRawData for pattern string because it may be cached internally by the regexp engine
+    QString string1 = QString::fromRawData( reinterpret_cast<const QChar*>( data1 ), len1 / sizeof( QChar ) );
+    QString string2 = QString::fromRawData( reinterpret_cast<const QChar*>( data2 ), len2 / sizeof( QChar ) );
 
-  // do not use fromRawData for pattern string because it may be cached internally by the regexp engine
-  QString string1 = QString::fromRawData( reinterpret_cast<const QChar*>( data1 ), len1 / sizeof( QChar ) );
-  QString string2 = QString::fromRawData( reinterpret_cast<const QChar*>( data2 ), len2 / sizeof( QChar ) );
+    QRegularExpression pattern( string1, QRegularExpression::DotMatchesEverythingOption |
+                                         QRegularExpression::CaseInsensitiveOption);
+    QRegularExpressionMatch m = pattern.match(string2);
 
-  QzRegExp pattern( string1, Qt::CaseInsensitive);
-  int pos = pattern.indexIn( string2 );
-
-  sqlite3_result_int( context, (pos > -1) ? 1 : 0 );
+    sqlite3_result_int( context, m.hasMatch() ? 1 : 0 );
+  }
 }
 
 static void upperFunction(sqlite3_context* context, int /*argc*/, sqlite3_value** argv)
@@ -68,12 +69,13 @@ static void upperFunction(sqlite3_context* context, int /*argc*/, sqlite3_value*
   int len = sqlite3_value_bytes16(argv[0]);
   const void* data = sqlite3_value_text16(argv[0]);
 
-  if (!data) return;
+  if (data)
+  {
+    QString string = QString::fromRawData(reinterpret_cast<const QChar*>(data), len/sizeof(QChar));
+    string = string.toUpper();
 
-  QString string = QString::fromRawData(reinterpret_cast<const QChar*>(data), len/sizeof(QChar));
-  string = string.toUpper();
-
-  sqlite3_result_text16(context, string.data(), -1, SQLITE_TRANSIENT);
+    sqlite3_result_text16(context, string.data(), -1, SQLITE_TRANSIENT);
+  }
 }
 
 void installSQLiteExtension( sqlite3* db )

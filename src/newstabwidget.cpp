@@ -24,6 +24,7 @@
 
 #if defined(Q_OS_WIN)
 #include <qt_windows.h>
+#include <memory>
 #endif
 #include <qzregexp.h>
 
@@ -186,7 +187,7 @@ void NewsTabWidget::createNewsList()
                           "newsFilter,Separator,deleteNewsAct";
   QString str = settings.value("Settings/newsToolBar", actionListStr).toString();
 
-  foreach (QString actionStr, str.split(",", QString::SkipEmptyParts)) {
+  foreach (QString actionStr, str.split(",", Qt::SkipEmptyParts)) {
     if (actionStr == "Separator") {
       newsToolBar_->addSeparator();
     } else {
@@ -2220,21 +2221,33 @@ bool NewsTabWidget::openUrl(const QUrl &url)
 
   mainWindow_->isOpeningLink_ = true;
   if ((mainWindow_->externalBrowserOn_ == 2) || (mainWindow_->externalBrowserOn_ == -1)) {
+
 #if defined(Q_OS_WIN)
+    auto encoded_url = url.toString(QUrl::None);
+
+    auto program = std::make_unique<wchar_t[]>(mainWindow_->externalBrowser_.length() * 2);
+    auto argument = std::make_unique<wchar_t[]>(encoded_url.length() * 2);
+
+    mainWindow_->externalBrowser_.toWCharArray(program);
+    encoded_url.toWCharArray(argument);
+
     quintptr returnValue = (quintptr)ShellExecute(
           0, 0,
-          (wchar_t *)QString::fromUtf8(mainWindow_->externalBrowser_.toUtf8()).utf16(),
-          (wchar_t *)QString::fromUtf8(url.toEncoded().constData()).utf16(),
+          program,
+          argument,
           0, SW_SHOWNORMAL);
-    if (returnValue > 32)
-      return true;
+
+    delete program, program = nullptr;
+    delete argument, argument = nullptr;
+
+    return returnValue > 32;
 #elif defined(Q_OS_MAC)
-    return (QProcess::startDetached("open", QStringList() << "-a" <<
-                                    QString::fromUtf8(mainWindow_->externalBrowser_.toUtf8()) <<
-                                    QString::fromUtf8(url.toEncoded().constData())));
+    return QProcess::startDetached("open", { "-a",
+                                    mainWindow_->externalBrowser_,
+                                    url.toString(QUrl::None) });
 #else
-    return (QProcess::startDetached(QString::fromUtf8(mainWindow_->externalBrowser_.toUtf8()) + QLatin1Char(' ') +
-                                    QString::fromUtf8(url.toEncoded().constData())));
+    return QProcess::startDetached(mainWindow_->externalBrowser_,
+                                    { url.toString(QUrl::None) });
 #endif
   }
   return QDesktopServices::openUrl(url);
@@ -2875,7 +2888,7 @@ void NewsTabWidget::savePageAsDescript()
 QString NewsTabWidget::getHtmlLabels(int row)
 {
   QStringList strLabelIdList = newsModel_->dataField(row, "label").toString().
-      split(",", QString::SkipEmptyParts);
+      split(",", Qt::SkipEmptyParts);
   QString labelsString;
   QList<QTreeWidgetItem *> labelListItems = mainWindow_->categoriesTree_->getLabelListItems();
   foreach (QTreeWidgetItem *item, labelListItems) {

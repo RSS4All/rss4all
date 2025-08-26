@@ -33,10 +33,12 @@ QzRegExp::QzRegExp(const QString &pattern, Qt::CaseSensitivity cs)
     }
 }
 
-QzRegExp::QzRegExp(const QzRegExp &re)
-    : QRegularExpression(re)
-    , m_matchedLength(-1)
+QzRegExp& QzRegExp::operator=(const QzRegExp &re)
 {
+  m_capturedTexts = re.m_capturedTexts;
+  m_matchedLength = re.m_matchedLength;
+  QRegularExpression::operator =(static_cast<const QRegularExpression&>(re));
+  return *this;
 }
 
 void QzRegExp::setMinimal(bool minimal)

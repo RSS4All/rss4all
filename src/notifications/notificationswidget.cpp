@@ -33,7 +33,7 @@ NotificationWidget::NotificationWidget(QList<int> idFeedList,
   , cntAllNews_(0)
   , cntReadNews_(0)
 {
-  Qt::WindowFlags flags;
+  Qt::WindowFlags flags = Qt::WindowFlags();
 #ifdef Q_OS_MAC
   flags = Qt::FramelessWindowHint | Qt::SplashScreen | Qt::X11BypassWindowManagerHint | Qt::WindowStaysOnTopHint;
 #else

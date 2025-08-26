@@ -67,6 +67,10 @@
 #include <QNetworkRequest>
 #include <QTimer>
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 15, 0))
+#define errorOccurred error
+#endif
+
 AdBlockBlockedNetworkReply::AdBlockBlockedNetworkReply(const AdBlockRule* rule, QObject* parent)
   : QNetworkReply(parent)
 {
@@ -93,7 +97,7 @@ qint64 AdBlockBlockedNetworkReply::readData(char* data, qint64 maxSize)
 
 void AdBlockBlockedNetworkReply::delayedFinished()
 {
-  emit error(QNetworkReply::ContentAccessDenied);
+  emit errorOccurred(QNetworkReply::ContentAccessDenied);
   emit finished();
 }
 

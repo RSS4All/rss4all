@@ -143,7 +143,7 @@ void NetworkManager::loadCertificates()
       }
     }
 #else
-    caCerts_ += QSslCertificate::fromPath(path + "/*.crt", QSsl::Pem, QRegExp::Wildcard);
+    caCerts_ += QSslCertificate::fromPath(path + "/*.crt", QSsl::Pem, QSslCertificate::PatternSyntax::Wildcard);
 #endif
   }
   // Local Certificates
@@ -161,7 +161,7 @@ void NetworkManager::loadCertificates()
     }
   }
 #else
-  localCerts_ = QSslCertificate::fromPath(mainApp->dataDir() + "/certificates/*.crt", QSsl::Pem, QRegExp::Wildcard);
+  localCerts_ = QSslCertificate::fromPath(mainApp->dataDir() + "/certificates/*.crt", QSsl::Pem, QSslCertificate::PatternSyntax::Wildcard);
 #endif
   QSslConfiguration::defaultConfiguration().setCaCertificates(caCerts_ + localCerts_);
 
@@ -349,7 +349,10 @@ bool NetworkManager::containsRejectedCerts(const QList<QSslCertificate> &certs)
 void NetworkManager::addLocalCertificate(const QSslCertificate &cert)
 {
   localCerts_.append(cert);
-  QSslSocket::addDefaultCaCertificate(cert);
+
+  QList<QSslCertificate> certs = QSslConfiguration::defaultConfiguration().caCertificates();
+  certs.append(cert);
+  QSslConfiguration::defaultConfiguration().setCaCertificates(certs);
 
   QDir dir(mainApp->dataDir());
   if (!dir.exists("certificates")) {
@@ -373,7 +376,7 @@ void NetworkManager::removeLocalCertificate(const QSslCertificate &cert)
 {
   localCerts_.removeOne(cert);
 
-  QList<QSslCertificate> certs = QSslConfiguration::defaultConfiguration().caCertificates();;
+  QList<QSslCertificate> certs = QSslConfiguration::defaultConfiguration().caCertificates();
   certs.removeOne(cert);
   QSslConfiguration::defaultConfiguration().setCaCertificates(certs);
 
